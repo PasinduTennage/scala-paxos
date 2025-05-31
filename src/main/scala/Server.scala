@@ -1,23 +1,39 @@
 import java.io.{BufferedReader, InputStreamReader, PrintWriter}
-import java.net.ServerSocket
+import java.net.{ServerSocket, Socket}
+import scala.concurrent.{ExecutionContext, Future}
+import scala.util.{Success, Failure}
 
-object Server{
-  def main(args: Array[String]): Unit={
+
+object Server {
+  // Use global execution context (or define your own thread pool)
+  implicit val ec: ExecutionContext = ExecutionContext.global
+
+  def main(args: Array[String]): Unit = {
     val server = new ServerSocket(9999)
-    println(s"server started on ${9999}")
-    val socket = server.accept()
+    while (true) {
+      val socket = server.accept()
+      Future {
+        handle(socket)
+      }.onComplete {
+        case Failure(e) => println("error")
+        case Success(_) => println("success")
+      }
+    }
+  }
 
+  def handle(socket: Socket): Unit = {
     val in = new BufferedReader(new InputStreamReader(socket.getInputStream))
     val out = new PrintWriter(socket.getOutputStream, true)
-
-    var line: String = null
-
-    while ({line = in.readLine();line!=null}){
-      println(line)
-      out.println(line)
+    var running = true
+    while (running) {
+      val s = in.readLine()
+      if (s == null) {
+        running = false
+      } else {
+        out.println(s)
+      }
     }
 
     socket.close()
-    server.close()
   }
 }
