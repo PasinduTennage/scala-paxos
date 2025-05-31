@@ -1,7 +1,7 @@
 # Multi Paxos implementation in Scala
 
-`mvn compile`
+`mvn clean package`
 
-`mvn exec:java -Dexec.mainClass="Server"`
+`./target/server 9999`
 
-`mvn exec:java -Dexec.mainClass="Client"`
+`./target/client `

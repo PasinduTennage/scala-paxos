@@ -1,15 +1,16 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
-         http://maven.apache.org/xsd/maven-4.0.0.xsd">
+                             http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
   <groupId>com.example</groupId>
-  <artifactId>TcpClientServer</artifactId>
+  <artifactId>Paxos</artifactId>
   <version>1.0-SNAPSHOT</version>
 
   <properties>
-    <scala.version>2.13.12</scala.version> <!-- Or 3.3.3 for Scala 3 -->
+    <scala.version>2.13.12</scala.version>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <maven.compiler.source>1.8</maven.compiler.source>
     <maven.compiler.target>1.8</maven.compiler.target>
   </properties>
@@ -24,7 +25,9 @@
 
   <build>
     <sourceDirectory>src/main/scala</sourceDirectory>
+
     <plugins>
+      <!-- Scala Compiler -->
       <plugin>
         <groupId>net.alchim31.maven</groupId>
         <artifactId>scala-maven-plugin</artifactId>
@@ -38,6 +41,37 @@
           </execution>
         </executions>
       </plugin>
+
+      <!-- GraalVM Native Image Plugin -->
+      <plugin>
+        <groupId>org.graalvm.buildtools</groupId>
+        <artifactId>native-maven-plugin</artifactId>
+        <version>0.9.23</version>
+        <executions>
+          <execution>
+            <id>build-server</id>
+            <goals>
+              <goal>build</goal>
+            </goals>
+            <configuration>
+              <mainClass>paxos.server.Main</mainClass>
+              <imageName>server</imageName>
+            </configuration>
+          </execution>
+          <execution>
+            <id>build-client</id>
+            <goals>
+              <goal>build</goal>
+            </goals>
+            <configuration>
+              <mainClass>paxos.client.Main</mainClass>
+              <imageName>client</imageName>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+
+
     </plugins>
   </build>
 </project>
