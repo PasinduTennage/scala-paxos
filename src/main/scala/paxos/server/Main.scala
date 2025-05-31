@@ -1,10 +1,12 @@
+package paxos.server
+
 import java.io.{BufferedReader, InputStreamReader, PrintWriter}
 import java.net.{ServerSocket, Socket}
 import scala.concurrent.{ExecutionContext, Future}
-import scala.util.{Success, Failure}
+import scala.util.{Failure, Success}
 
 
-object Server {
+object Main {
   // Use global execution context (or define your own thread pool)
   implicit val ec: ExecutionContext = ExecutionContext.global
 

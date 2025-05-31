@@ -1,7 +1,9 @@
-import java.io.{BufferedReader, BufferedWriter, InputStreamReader, PrintWriter}
+package paxos.client
+
+import java.io.{BufferedReader, InputStreamReader, PrintWriter}
 import java.net.Socket
 
-object Client{
+object Main{
   def main(args: Array[String]):Unit = {
     val socket = new Socket("localhost",9999)
     val in = new BufferedReader(new InputStreamReader(socket.getInputStream))
