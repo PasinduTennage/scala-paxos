@@ -1,10 +1,11 @@
 package paxos.client
 
-import java.io.{BufferedReader, InputStreamReader, PrintWriter}
-import java.net.Socket
+import paxos.config.JsonLoader
 
-object Main{
-  def main(args: Array[String]):Unit = {
-    new Client().start()
+object Main {
+  def main(args: Array[String]): Unit = {
+    if (args.length != 1) System.exit(-1)
+    val id = args(0).toInt
+    new Client(id).start()
   }
 }

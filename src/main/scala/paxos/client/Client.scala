@@ -5,9 +5,9 @@ import java.net.Socket
 import paxos.shared.Message
 import upickle.default._
 
-class Client {
+class Client(port: Int) {
   def start(): Unit = {
-    val socket = new Socket("localhost", 9999)
+    val socket = new Socket("localhost", port)
     val in = new BufferedReader(new InputStreamReader(socket.getInputStream))
     val out = new PrintWriter(socket.getOutputStream, true)
 
