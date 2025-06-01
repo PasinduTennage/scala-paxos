@@ -6,6 +6,14 @@ import paxos.shared.Message
 import upickle.default._
 
 class Client(port: Int) {
+
+  var readers: List[BufferedReader] = Nil // Default value; will be set later
+
+  def setReaders(rs: List[BufferedReader]): Unit = {
+    this.readers = rs
+  }
+
+
   def start(): Unit = {
     val socket = new Socket("localhost", port)
     val in = new BufferedReader(new InputStreamReader(socket.getInputStream))
