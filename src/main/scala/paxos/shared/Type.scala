@@ -2,6 +2,14 @@ package paxos.shared
 
 import upickle.default._
 
+case class ClientBatch(
+                        senderId: Int,
+                        commands: List[String])
+
+object ClientBatch {
+  implicit val rw: ReadWriter[ClientBatch] = macroRW
+}
+
 case class Prepare(
                     senderId: Int,
                     instance: Int,
@@ -25,7 +33,7 @@ object Promise {
 case class Propose(
                     instance: Int,
                     proposeBallot: Int,
-                    proposeValue: List[String])
+                    proposeValue: List[ClientBatch])
 
 object Propose {
   implicit val rw: ReadWriter[Propose] = macroRW
@@ -58,7 +66,7 @@ object FetchRequest {
 case class FetchResponse(
                           instance: Int,
                           decideBallot: Int,
-                          value: List[String])
+                          value: List[ClientBatch])
 
 object FetchResponse {
   implicit val rw: ReadWriter[FetchResponse] = macroRW
