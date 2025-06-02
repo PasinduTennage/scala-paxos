@@ -4,12 +4,14 @@ import java.io.File
 import scala.io.Source
 import upickle.default._
 
-case class Peer(name: Int, address: String)
+case class Peer(name: Int, ip: String, port: Int)
+
 object Peer {
   implicit val rw: ReadWriter[Peer] = macroRW
 }
 
 case class NetworkConfig(peers: List[Peer])
+
 object NetworkConfig {
   implicit val rw: ReadWriter[NetworkConfig] = macroRW
 }
