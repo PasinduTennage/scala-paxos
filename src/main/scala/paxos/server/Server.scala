@@ -1,5 +1,7 @@
 package paxos.server
 
+import paxos.config.NetworkConfig
+
 import java.io.{BufferedReader, InputStreamReader, PrintWriter}
 import java.net.{ServerSocket, Socket}
 import scala.concurrent.{ExecutionContext, Future}
@@ -7,7 +9,7 @@ import scala.util.{Failure, Success}
 import paxos.shared.Message
 import upickle.default._
 
-class Server(port: Int) {
+class Server(port: Int, name: Int, config: NetworkConfig, replicaBathSize: Int, replicaBatchTime: Int, viewTimeOut: Int, logPath: String, debugLevel: Int, pipeLineLength: Int) {
   implicit val ec: ExecutionContext = ExecutionContext.global
 
   def start(): Unit = {
