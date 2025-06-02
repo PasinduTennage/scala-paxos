@@ -69,7 +69,9 @@ object Main {
 
         val port = maybeSelf.get.port
 
-        new Server(port, cmdArgs.name, config, cmdArgs.replicaBathSize, cmdArgs.replicaBatchTime, cmdArgs.viewTimeOut, cmdArgs.logPath, cmdArgs.debugLevel, cmdArgs.pipeLineLength).start()
+        val s: Server = new Server(port, cmdArgs.name, config, cmdArgs.replicaBathSize, cmdArgs.replicaBatchTime, cmdArgs.viewTimeOut, cmdArgs.logPath, cmdArgs.debugLevel, cmdArgs.pipeLineLength).start()
+
+        s.start()
 
       case None =>
         System.exit(1)

@@ -2,72 +2,61 @@ package paxos.shared
 
 import upickle.default._
 
+sealed trait Message
+
+case class Id(senderId: Int) extends Message
+
 case class ClientBatch(
                         senderId: Int,
-                        commands: List[String])
-
-object ClientBatch {
-  implicit val rw: ReadWriter[ClientBatch] = macroRW
-}
+                        commands: List[String]) extends Message
 
 case class Prepare(
                     senderId: Int,
                     instance: Int,
-                    prepareBallot: Int)
-
-object Prepare {
-  implicit val rw: ReadWriter[Prepare] = macroRW
-}
+                    prepareBallot: Int) extends Message
 
 case class Promise(
                     senderId: Int,
                     instance: Int,
                     promiseBallot: Int,
                     lastAcceptedBallot: Int,
-                    lastAcceptedValue: List[String])
-
-object Promise {
-  implicit val rw: ReadWriter[Promise] = macroRW
-}
+                    lastAcceptedValue: List[String]) extends Message
 
 case class Propose(
                     instance: Int,
                     proposeBallot: Int,
-                    proposeValue: List[ClientBatch])
-
-object Propose {
-  implicit val rw: ReadWriter[Propose] = macroRW
-}
+                    proposeValue: List[ClientBatch]) extends Message
 
 case class Accept(
                    instance: Int,
-                   acceptBallot: Int)
+                   acceptBallot: Int) extends Message
 
-object Accept {
-  implicit val rw: ReadWriter[Accept] = macroRW
-}
 
 case class Decide(
                    instance: Int,
-                   decideBallot: Int)
+                   decideBallot: Int) extends Message
 
-object Decide {
-  implicit val rw: ReadWriter[Decide] = macroRW
-}
 
 case class FetchRequest(
                          instance: Int,
-                         decideBallot: Int)
+                         decideBallot: Int) extends Message
 
-object FetchRequest {
-  implicit val rw: ReadWriter[FetchRequest] = macroRW
-}
 
 case class FetchResponse(
                           instance: Int,
                           decideBallot: Int,
-                          value: List[ClientBatch])
+                          value: List[ClientBatch]) extends Message
 
-object FetchResponse {
-  implicit val rw: ReadWriter[FetchResponse] = macroRW
+object Message {
+  implicit val rw: ReadWriter[Message] = ReadWriter.merge(
+    macroRW[Id],
+    macroRW[ClientBatch],
+    macroRW[Prepare],
+    macroRW[Promise],
+    macroRW[Propose],
+    macroRW[Accept],
+    macroRW[Decide],
+    macroRW[FetchRequest],
+    macroRW[FetchResponse]
+  )
 }
