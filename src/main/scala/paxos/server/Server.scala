@@ -34,7 +34,6 @@ class Server(port: Int,
   var incomingClientBatches: mutable.Seq[ClientBatch] = ListBuffer.empty
 
   def initServer(): Unit = {
-
     Future {
 
       println(s"initializing server ${name}")
