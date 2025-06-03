@@ -8,15 +8,16 @@ case class CmdArgs(
                     configPath: String = "config/config.json",
                     replicaBathSize: Int = 100,
                     replicaBatchTime: Int = 100, // ms
-                    viewTimeOut: Int = 10, // ms
+                    viewTimeOut: Int = 10000, // ms
                     logPath: String = "logs/",
                     debugLevel: Int = 0,
-                    pipeLineLength: Int = 1,
-                  )
+                    pipeLineLength: Int = 1 /*//todo pipelining implementation */)
 
 object Main {
   def main(args: Array[String]): Unit = {
+
     val builder = OParser.builder[CmdArgs]
+
     val parser = {
       import builder._
       OParser.sequence(
@@ -69,11 +70,15 @@ object Main {
 
         val port = maybeSelf.get.port
 
-        val s: Server = new Server(port, cmdArgs.name, config, cmdArgs.replicaBathSize, cmdArgs.replicaBatchTime, cmdArgs.viewTimeOut, cmdArgs.logPath, cmdArgs.debugLevel, cmdArgs.pipeLineLength).start()
+        val s: Server = new Server(port, cmdArgs.name, config, cmdArgs.replicaBathSize, cmdArgs.replicaBatchTime, cmdArgs.viewTimeOut, cmdArgs.logPath, cmdArgs.debugLevel, cmdArgs.pipeLineLength)
+        s.initServer()
 
-        s.start()
+        while (true) {
+          Thread.sleep(100)
+        }
 
       case None =>
+        println("failed passing args")
         System.exit(1)
     }
   }
