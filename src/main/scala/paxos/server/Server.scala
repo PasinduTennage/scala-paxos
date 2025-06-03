@@ -1,7 +1,7 @@
 package paxos.server
 
 import paxos.config.NetworkConfig
-import paxos.shared.{Accept, ClientBatch, Decide, FetchRequest, FetchResponse, Message, Prepare, Promise, Propose}
+import paxos.shared.{Accept, ClientBatch, Decide, FetchRequest, FetchResponse, HeartBeat, Message, Prepare, Promise, Propose, Id}
 
 import java.io.{BufferedReader, InputStreamReader, PrintWriter}
 import java.net.{InetAddress, ServerSocket, Socket}
@@ -102,6 +102,17 @@ class Server(port: Int,
 
   private def startHeartBeats(): Unit = {
 
+    while (true) {
+      val msg = HeartBeat(name)
+      val json = write[Message](msg)
+
+      this.config.peers.foreach {
+        peer => {
+          this.replicaWriters(peer.name).println(json)
+        }
+      }
+      Thread.sleep(1000)
+    }
   }
 
   // connect to all the replicas inSync
@@ -128,7 +139,7 @@ class Server(port: Int,
     println("connected to all peers")
   }
 
-  // handle the new client connection
+  // handle the new client connection, and put all incoming messages to buffer
 
   private def handle_client_socket(socket: Socket): Unit = {
 
@@ -137,38 +148,26 @@ class Server(port: Int,
     val in = new BufferedReader(new InputStreamReader(socket.getInputStream))
 
     var line: String = in.readLine()
-    var setWriter = false
+    val msg = read[Message](line)
+    msg match {
+      case m: Id =>
+        this.clientWriters(m.senderId) = new PrintWriter(socket.getOutputStream, true)
+    }
 
+    line = in.readLine()
     while (line != null) {
-      val msg = read[Message](line)
-      msg match {
-        case m: paxos.shared.ClientBatch => {
-          if (!setWriter) {
-            setWriter = true
-            val client = m.senderId
-            this.clientWriters(client) = new PrintWriter(socket.getOutputStream, true)
-          }
-          handleClientBatch(m)
-        }
-      }
+      this.inputChannel.put(line)
       line = in.readLine()
     }
   }
 
-  // handler for new client batches
-
-  private def handleClientBatch(m: ClientBatch): Unit = {
-    println(s"client batch from ${m.senderId}")
-    this.incomingClientBatches += m
-    // todo if self is not the paxos leader then forward the client batch to leader
-  }
-
-
-  // handle the new server connection
+  // handle the new server connection handle and put all incoming messages to buffer
 
   def handle_server_socket(socket: Socket): Unit = {
     println("Server handling input connection")
+
     val in = new BufferedReader(new InputStreamReader(socket.getInputStream))
+
     var line: String = in.readLine()
     while (line != null) {
       this.inputChannel.put(line)
@@ -177,7 +176,7 @@ class Server(port: Int,
 
   }
 
-  // main Paxos event processing loop
+  // main event processing loop
 
   def run(): Unit = {
 
@@ -188,6 +187,13 @@ class Server(port: Int,
       val msg = read[Message](line)
 
       msg match {
+
+        case m: HeartBeat =>
+          handleHeartBeat(m)
+
+        case m: ClientBatch =>
+          handleClientBatch(m)
+
         case m: paxos.shared.Prepare =>
           handlePrepare(m)
 
@@ -210,6 +216,20 @@ class Server(port: Int,
           handleFetchResponse(m)
       }
     }
+  }
+
+  // print heart beat details
+
+  private def handleHeartBeat(m: HeartBeat): Unit = {
+    println(s"Received heart beat from ${m.senderId}")
+  }
+
+  // handler for new client batches
+
+  private def handleClientBatch(m: ClientBatch): Unit = {
+    println(s"client batch from ${m.senderId}")
+    this.incomingClientBatches += m
+    // todo if self is not the paxos leader then forward the client batch to leader
   }
 
   // paxos specific handlers

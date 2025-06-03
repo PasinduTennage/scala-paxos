@@ -49,7 +49,9 @@ case class FetchResponse(
                           decideBallot: Int,
                           value: List[ClientBatch]) extends Message
 
+
 object Message {
+  implicit val clientBatchRW: ReadWriter[ClientBatch] = macroRW
   implicit val rw: ReadWriter[Message] = ReadWriter.merge(
     macroRW[HeartBeat],
     macroRW[Id],
