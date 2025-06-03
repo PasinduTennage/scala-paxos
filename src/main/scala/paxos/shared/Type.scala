@@ -4,6 +4,8 @@ import upickle.default._
 
 sealed trait Message
 
+case class HeartBeat(senderId: Int) extends Message
+
 case class Id(senderId: Int) extends Message
 
 case class ClientBatch(
@@ -49,6 +51,7 @@ case class FetchResponse(
 
 object Message {
   implicit val rw: ReadWriter[Message] = ReadWriter.merge(
+    macroRW[HeartBeat],
     macroRW[Id],
     macroRW[ClientBatch],
     macroRW[Prepare],

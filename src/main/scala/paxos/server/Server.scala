@@ -21,26 +21,36 @@ class Server(port: Int,
              logPath: String,
              debugLevel: Int,
              pipeLineLength: Int) {
-  implicit val ec: ExecutionContext = ExecutionContext.global
 
-  var numReplicas: Int = config.peers.length
+  // todo this version does not implement pipelining yet!
 
-  var clientWriters: mutable.Map[Int, PrintWriter] = mutable.Map.empty
 
-  var replicaWriters: mutable.Map[Int, PrintWriter] = mutable.Map.empty
+  implicit val ec: ExecutionContext = ExecutionContext.global // global thread pool because this code uses multiple threads
 
-  var inputChannel = new SynchronousQueue[String]()
+  var numReplicas: Int = config.peers.length // parameter n in paxos
 
-  var incomingClientBatches: mutable.Seq[ClientBatch] = ListBuffer.empty
+  var clientWriters: mutable.Map[Int, PrintWriter] = mutable.Map.empty // outgoing connection writers for clients
+
+  var replicaWriters: mutable.Map[Int, PrintWriter] = mutable.Map.empty //outgoing connection writers for replicas
+
+  var inputChannel = new SynchronousQueue[String]() // central buffer holding all the incoming messages
+
+  var incomingClientBatches: mutable.Seq[ClientBatch] = ListBuffer.empty // client batches to be proposed later
+
+
+  // initServer is the main execution point of Paxos server.
 
   def initServer(): Unit = {
+
+    // start the server socket and handle new replica connections
+
     Future {
 
       println(s"initializing server ${name}")
 
-      val tcpServer = new ServerSocket(port, 150, InetAddress.getByName("0.0.0.0"))
+      val replicaServer = new ServerSocket(port, 150, InetAddress.getByName("0.0.0.0"))
 
-      println(s"Server started listening on port $port")
+      println(s"Server started listening on port 0.0.0.0:$port")
 
       Future {
         println("server starting the main loop")
@@ -50,39 +60,77 @@ class Server(port: Int,
       Future {
         println("Server started accepting new requests")
         while (true) {
-          val socket = tcpServer.accept()
+          val socket = replicaServer.accept()
           Future {
-            handle(socket)
+            handle_server_socket(socket)
           }
         }
       }
     }
 
+    // start proxy server and handle new client connections
 
     Future {
       println("initializing the proxy")
 
       val proxyServer = new ServerSocket(port + 1, 150, InetAddress.getByName("0.0.0.0"))
 
-      println(s"Proxy started listening on port ${port + 1}")
+      println(s"Proxy started listening on port 0.0.0.0:${port + 1}")
 
       Future {
         println("Proxy started accepting new client requests")
         while (true) {
           val socket = proxyServer.accept()
           Future {
-            handle_client(socket)
+            handle_client_socket(socket)
           }
         }
       }
 
     }
 
+    // connect to all replicas
 
     this.connectToReplicas()
+
+    // start heartbeats
+
+    this.startHeartBeats()
   }
 
-  private def handle_client(socket: Socket): Unit = {
+  // periodically send the heart beats to all other replicas
+
+  private def startHeartBeats(): Unit = {
+
+  }
+
+  // connect to all the replicas inSync
+
+  private def connectToReplicas(): Unit = {
+    this.config.peers.foreach {
+      peer => {
+        var connected = false
+
+        while (!connected) {
+          try {
+            val socket = new Socket(peer.ip, peer.port)
+            val out = new PrintWriter(socket.getOutputStream, true)
+            this.replicaWriters(peer.name) = out
+            println(s"Connected to  $peer")
+            connected = true
+          } catch {
+            case e: Exception =>
+              Thread.sleep(100)
+          }
+        }
+      }
+    }
+    println("connected to all peers")
+  }
+
+  // handle the new client connection
+
+  private def handle_client_socket(socket: Socket): Unit = {
 
     println("Proxy handling input connection")
 
@@ -107,29 +155,17 @@ class Server(port: Int,
     }
   }
 
-  private def connectToReplicas(): Unit = {
-    this.config.peers.foreach {
-      peer => {
-        var connected = false
+  // handler for new client batches
 
-        while (!connected) {
-          try {
-            val socket = new Socket(peer.ip, peer.port)
-            val out = new PrintWriter(socket.getOutputStream, true)
-            this.replicaWriters(peer.name) = out
-            println(s"Connected to  $peer")
-            connected = true
-          } catch {
-            case e: Exception =>
-              Thread.sleep(100)
-          }
-        }
-      }
-    }
-    println("connected to all peers")
+  private def handleClientBatch(m: ClientBatch): Unit = {
+    println(s"client batch from ${m.senderId}")
+    this.incomingClientBatches += m
   }
 
-  def handle(socket: Socket): Unit = {
+
+  // handle the new server connection
+
+  def handle_server_socket(socket: Socket): Unit = {
     println("Server handling input connection")
     val in = new BufferedReader(new InputStreamReader(socket.getInputStream))
     var line: String = in.readLine()
@@ -139,6 +175,8 @@ class Server(port: Int,
     }
 
   }
+
+  // main Paxos event processing loop
 
   def run(): Unit = {
 
@@ -173,6 +211,8 @@ class Server(port: Int,
     }
   }
 
+  // paxos specific handlers
+
   private def handlePrepare(m: Prepare): Unit = {}
 
   private def handlePromise(m: Promise): Unit = {}
@@ -186,10 +226,5 @@ class Server(port: Int,
   private def handleFetchRequest(m: FetchRequest): Unit = {}
 
   private def handleFetchResponse(m: FetchResponse): Unit = {}
-
-  private def handleClientBatch(m: ClientBatch): Unit = {
-    println(s"client batch from ${m.senderId}")
-    this.incomingClientBatches += m
-  }
 
 }

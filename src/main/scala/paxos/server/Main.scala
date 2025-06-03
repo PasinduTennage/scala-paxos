@@ -73,10 +73,6 @@ object Main {
         val s: Server = new Server(port, cmdArgs.name, config, cmdArgs.replicaBathSize, cmdArgs.replicaBatchTime, cmdArgs.viewTimeOut, cmdArgs.logPath, cmdArgs.debugLevel, cmdArgs.pipeLineLength)
         s.initServer()
 
-        while (true) {
-          Thread.sleep(100)
-        }
-
       case None =>
         println("failed passing args")
         System.exit(1)
