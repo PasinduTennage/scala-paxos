@@ -152,6 +152,8 @@ class Server(port: Int,
     msg match {
       case m: Id =>
         this.clientWriters(m.senderId) = new PrintWriter(socket.getOutputStream, true)
+      case other =>
+        throw new RuntimeException("Client should first send me the Id")
     }
 
     line = in.readLine()
