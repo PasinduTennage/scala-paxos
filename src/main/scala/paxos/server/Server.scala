@@ -73,7 +73,7 @@ class Server(port: Int,
     Future {
       println("initializing the proxy")
 
-      val proxyServer = new ServerSocket(port + 1, 150, InetAddress.getByName("0.0.0.0"))
+      val proxyServer = new ServerSocket(port + 1000, 150, InetAddress.getByName("0.0.0.0"))
 
       println(s"Proxy started listening on port 0.0.0.0:${port + 1}")
 
