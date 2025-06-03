@@ -35,7 +35,7 @@ class Server(port: Int,
 
   var inputChannel = new SynchronousQueue[String]() // central buffer holding all the incoming messages
 
-  var incomingClientBatches: mutable.Seq[ClientBatch] = ListBuffer.empty // client batches to be proposed later
+  var incomingClientBatches = ListBuffer.empty[ClientBatch] // client batches to be proposed later
 
 
   // initServer is the main execution point of Paxos server.
@@ -132,7 +132,7 @@ class Server(port: Int,
 
   private def handle_client_socket(socket: Socket): Unit = {
 
-    println("Proxy handling input connection")
+    println("Proxy handling client input connection")
 
     val in = new BufferedReader(new InputStreamReader(socket.getInputStream))
 
@@ -160,6 +160,7 @@ class Server(port: Int,
   private def handleClientBatch(m: ClientBatch): Unit = {
     println(s"client batch from ${m.senderId}")
     this.incomingClientBatches += m
+    // todo if self is not the paxos leader then forward the client batch to leader
   }
 
 
