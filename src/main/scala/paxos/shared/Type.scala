@@ -20,7 +20,7 @@ case class Promise(
                     instance: Int,
                     promiseBallot: Int,
                     lastAcceptedBallot: Int,
-                    lastAcceptedValue: List[String]) extends Message
+                    lastAcceptedValue: List[ClientBatch]) extends Message
 
 case class Propose(
                     instance: Int,
