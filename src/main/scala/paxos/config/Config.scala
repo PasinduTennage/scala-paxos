@@ -19,10 +19,12 @@ object NetworkConfig {
 object JsonLoader {
   def load(path: String): NetworkConfig = {
     val source = Source.fromFile(new File(path))
+
     try {
       read[NetworkConfig](source.mkString)
     } finally {
       source.close()
     }
+
   }
 }
