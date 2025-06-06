@@ -18,7 +18,7 @@ class Slot {
   var prepared_ballot: Int = -1
   var promised_ballot: Int = -1
   var highest_seen_accepted_ballot: Int = -1
-  var highest_seen_accepted_value: String = null
+  var highest_seen_accepted_value: ReplicaBatch = null
   var num_prepare_reponses: Int = 0
 
   var proposed_ballot: Int = -1
@@ -36,13 +36,15 @@ class Paxos(val n: Int, val server: Server) {
   // replicated log
   var slots = ListBuffer.empty[Slot]
 
-  // current view number
-  var view: Int = 0
-
   // last decided index
   var last_decided_index: Int = -1
 
   var current_leader = 1 // initial leader is replica 1
+
+  val last_id = 1 // last id used for creating ReplicaBatch
+
+  var incomingClientBatches =
+    ListBuffer.empty[ClientBatch] // client batches to be proposed later
 
   def get_current_leader(): Int = {
     this.current_leader
@@ -107,12 +109,42 @@ class Paxos(val n: Int, val server: Server) {
           lastAcceptedBallot = this.slots(m.instance).accepted_ballot,
           lastAcceptedValue = this.id_replicaBatch.getOrElse(
             this.slots(m.instance).accepted_value_id,
-            ReplicaBatch("", List())
+            null
           )
         )
         this.server.replicaWriters(m.senderId).println(write[Message](msg))
       }
     }
+  }
 
+  def handle_promise(m: Promise): Unit = {
+    this.create_instance_if_not_exists(m.instance)
+
+    if (m.promiseBallot == this.slots(m.instance).prepared_ballot) {
+
+      this.slots(m.instance).num_prepare_reponses += 1
+
+      if (
+        m.lastAcceptedBallot > this
+          .slots(m.instance)
+          .highest_seen_accepted_ballot
+      ) {
+        this.slots(m.instance).highest_seen_accepted_ballot =
+          m.lastAcceptedBallot
+        this.slots(m.instance).highest_seen_accepted_value = m.lastAcceptedValue
+      }
+      if (this.slots(m.instance).num_prepare_reponses == this.n / 2 + 1) {
+
+        // declare self as the leader for this view
+
+        // receive enough prepare responses
+        // send a Propose message to all replicas
+        val propose_ballot = this.slots(m.instance).prepared_ballot
+        var propose_value = this.slots(m.instance).highest_seen_accepted_value
+
+        // TODO
+
+      }
+    }
   }
 }
