@@ -136,7 +136,7 @@ class Server(
         }
       }
     }
-    println("connected to all peers")
+    println("connected to all remote replicas")
   }
 
   // periodically send the heart beats to all other replicas
@@ -152,38 +152,13 @@ class Server(
           this.replicaWriters(peer.name).println(json)
         }
       }
+
       Thread.sleep(1000)
     }
   }
 
-  
 
-  // handle the new client connection, and put all incoming messages to buffer
-
-  private def handle_client_socket(socket: Socket): Unit = {
-
-    println("Proxy handling client input connection")
-
-    val in = new BufferedReader(new InputStreamReader(socket.getInputStream))
-
-    var line: String = in.readLine()
-    val msg = read[Message](line)
-    msg match {
-      case m: Id =>
-        this.clientWriters(m.senderId) =
-          new PrintWriter(socket.getOutputStream, true)
-      case other =>
-        throw new RuntimeException("Client should first send me the Id")
-    }
-
-    line = in.readLine()
-    while (line != null) {
-      this.inputChannel.put(line)
-      line = in.readLine()
-    }
-  }
-
-  // handle the new server connection handle and put all incoming messages to buffer
+  // handle the new server connection -- put all incoming messages to buffer
 
   def handle_server_socket(socket: Socket): Unit = {
     println("Server handling input connection")
@@ -239,6 +214,33 @@ class Server(
       }
     }
   }
+
+  // handle the new client connection, and put all incoming messages to buffer
+
+  private def handle_client_socket(socket: Socket): Unit = {
+
+    println("Proxy handling client input connection")
+
+    val in = new BufferedReader(new InputStreamReader(socket.getInputStream))
+
+    var line: String = in.readLine()
+    val msg = read[Message](line)
+    msg match {
+      case m: Id =>
+        // client first sends its Id
+        this.clientWriters(m.senderId) =
+          new PrintWriter(socket.getOutputStream, true)
+      case other =>
+        throw new RuntimeException("Client should first send me the Id")
+    }
+
+    line = in.readLine()
+    while (line != null) {
+      this.inputChannel.put(line)
+      line = in.readLine()
+    }
+  }
+
 
   // print heart beat details
 

@@ -1,6 +1,7 @@
 package paxos.shared
 
 import upickle.default._
+import ujson.Str
 
 sealed trait Message
 
@@ -12,6 +13,9 @@ case class Id(
 
 case class ClientBatch(
   senderId: Int, commands: List[String]) extends Message
+
+case class ReplicaBatch(
+  proposalId: String, commands: List[ClientBatch]) extends Message  
 
 case class Prepare(
   senderId: Int, 
@@ -29,7 +33,9 @@ case class Promise(
 case class Propose(
     instance: Int,
     proposeBallot: Int,
+    proposeId: String,
     proposeValue: List[ClientBatch]) extends Message
+    
 
 case class Accept(
   instance: Int, 
@@ -37,15 +43,15 @@ case class Accept(
 
 case class Decide(
   instance: Int, 
-  decideBallot: Int) extends Message
+  decideId: String) extends Message
 
 case class FetchRequest(
   instance: Int, 
-  decideBallot: Int) extends Message
+  decideId: String) extends Message
 
 case class FetchResponse(
     instance: Int,
-    decideBallot: Int,
+    decideId: String,
     value: List[ClientBatch]) extends Message
 
 object Message {
