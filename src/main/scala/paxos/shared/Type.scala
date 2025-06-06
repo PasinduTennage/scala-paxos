@@ -4,51 +4,49 @@ import upickle.default._
 
 sealed trait Message
 
-case class HeartBeat(senderId: Int) extends Message
+case class HeartBeat(
+  senderId: Int) extends Message
 
-case class Id(senderId: Int) extends Message
+case class Id(
+  senderId: Int) extends Message
 
 case class ClientBatch(
-                        senderId: Int,
-                        commands: List[String]) extends Message
+  senderId: Int, commands: List[String]) extends Message
 
 case class Prepare(
-                    senderId: Int,
-                    instance: Int,
-                    prepareBallot: Int) extends Message
+  senderId: Int, 
+  instance: Int, 
+  prepareBallot: Int)extends Message
 
 case class Promise(
-                    senderId: Int,
-                    instance: Int,
-                    promiseBallot: Int,
-                    lastAcceptedBallot: Int,
-                    lastAcceptedValue: List[ClientBatch]) extends Message
+    senderId: Int,
+    instance: Int,
+    promiseBallot: Int,
+    lastAcceptedBallot: Int,
+    lastAcceptedValue: List[ClientBatch]
+) extends Message
 
 case class Propose(
-                    instance: Int,
-                    proposeBallot: Int,
-                    proposeValue: List[ClientBatch]) extends Message
+    instance: Int,
+    proposeBallot: Int,
+    proposeValue: List[ClientBatch]) extends Message
 
 case class Accept(
-                   instance: Int,
-                   acceptBallot: Int) extends Message
-
+  instance: Int, 
+  acceptBallot: Int) extends Message
 
 case class Decide(
-                   instance: Int,
-                   decideBallot: Int) extends Message
-
+  instance: Int, 
+  decideBallot: Int) extends Message
 
 case class FetchRequest(
-                         instance: Int,
-                         decideBallot: Int) extends Message
-
+  instance: Int, 
+  decideBallot: Int) extends Message
 
 case class FetchResponse(
-                          instance: Int,
-                          decideBallot: Int,
-                          value: List[ClientBatch]) extends Message
-
+    instance: Int,
+    decideBallot: Int,
+    value: List[ClientBatch]) extends Message
 
 object Message {
   implicit val clientBatchRW: ReadWriter[ClientBatch] = macroRW

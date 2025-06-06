@@ -1,5 +1,13 @@
 package paxos.server
 
+import java.io.{BufferedReader, InputStreamReader, PrintWriter}
+import java.net.{InetAddress, ServerSocket, Socket}
+import scala.concurrent.{ExecutionContext, Future}
+import upickle.default._
+import java.util.concurrent.SynchronousQueue
+import scala.collection.mutable
+import scala.collection.mutable.ListBuffer
+
 import paxos.config.NetworkConfig
 import paxos.shared.{
   Accept,
@@ -15,15 +23,6 @@ import paxos.shared.{
   Id
 }
 
-import java.io.{BufferedReader, InputStreamReader, PrintWriter}
-import java.net.{InetAddress, ServerSocket, Socket}
-import scala.concurrent.{ExecutionContext, Future}
-import upickle.default._
-
-import java.util.concurrent.SynchronousQueue
-import scala.collection.mutable
-import scala.collection.mutable.ListBuffer
-
 class Server(
     port: Int,
     name: Int,
@@ -36,7 +35,7 @@ class Server(
     pipeLineLength: Int
 ) {
 
-  // todo this version does not implement pipelining yet!
+  // TODO this version does not implement pipelining yet!
 
   implicit val ec: ExecutionContext =
     ExecutionContext.global // global thread pool because this code uses multiple threads
@@ -77,15 +76,15 @@ class Server(
         this.run()
       }
 
-      Future {
-        println("Server started accepting new requests")
-        while (true) {
-          val socket = replicaServer.accept()
-          Future {
-            handle_server_socket(socket)
-          }
+      println("Server started accepting new requests")
+
+      while (true) {
+        val socket = replicaServer.accept()
+        Future {
+          handle_server_socket(socket)
         }
       }
+
     }
 
     // start proxy server and handle new client connections
@@ -96,18 +95,15 @@ class Server(
       val proxyServer =
         new ServerSocket(port + 1000, 150, InetAddress.getByName("0.0.0.0"))
 
-      println(s"Proxy started listening on port 0.0.0.0:${port + 1}")
+      println(s"Proxy started listening on port 0.0.0.0:${port + 1000}")
+      println("Proxy started accepting new client requests")
 
-      Future {
-        println("Proxy started accepting new client requests")
-        while (true) {
-          val socket = proxyServer.accept()
-          Future {
-            handle_client_socket(socket)
-          }
+      while (true) {
+        val socket = proxyServer.accept()
+        Future {
+          handle_client_socket(socket)
         }
       }
-
     }
 
     // connect to all replicas
@@ -119,24 +115,7 @@ class Server(
     this.startHeartBeats()
   }
 
-  // periodically send the heart beats to all other replicas
-
-  private def startHeartBeats(): Unit = {
-
-    while (true) {
-      val msg = HeartBeat(name)
-      val json = write[Message](msg)
-
-      this.config.peers.foreach { peer =>
-        {
-          this.replicaWriters(peer.name).println(json)
-        }
-      }
-      Thread.sleep(1000)
-    }
-  }
-
-  // connect to all the replicas inSync
+  // connect to all the replicas
 
   private def connectToReplicas(): Unit = {
     this.config.peers.foreach { peer =>
@@ -159,6 +138,25 @@ class Server(
     }
     println("connected to all peers")
   }
+
+  // periodically send the heart beats to all other replicas
+
+  private def startHeartBeats(): Unit = {
+
+    while (true) {
+      val msg = HeartBeat(name)
+      val json = write[Message](msg)
+
+      this.config.peers.foreach { peer =>
+        {
+          this.replicaWriters(peer.name).println(json)
+        }
+      }
+      Thread.sleep(1000)
+    }
+  }
+
+  
 
   // handle the new client connection, and put all incoming messages to buffer
 
