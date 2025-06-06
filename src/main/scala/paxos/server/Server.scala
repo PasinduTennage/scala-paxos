@@ -1,7 +1,19 @@
 package paxos.server
 
 import paxos.config.NetworkConfig
-import paxos.shared.{Accept, ClientBatch, Decide, FetchRequest, FetchResponse, HeartBeat, Message, Prepare, Promise, Propose, Id}
+import paxos.shared.{
+  Accept,
+  ClientBatch,
+  Decide,
+  FetchRequest,
+  FetchResponse,
+  HeartBeat,
+  Message,
+  Prepare,
+  Promise,
+  Propose,
+  Id
+}
 
 import java.io.{BufferedReader, InputStreamReader, PrintWriter}
 import java.net.{InetAddress, ServerSocket, Socket}
@@ -12,31 +24,38 @@ import java.util.concurrent.SynchronousQueue
 import scala.collection.mutable
 import scala.collection.mutable.ListBuffer
 
-class Server(port: Int,
-             name: Int,
-             config: NetworkConfig,
-             replicaBathSize: Int,
-             replicaBatchTime: Int,
-             viewTimeOut: Int,
-             logPath: String,
-             debugLevel: Int,
-             pipeLineLength: Int) {
+class Server(
+    port: Int,
+    name: Int,
+    config: NetworkConfig,
+    replicaBathSize: Int,
+    replicaBatchTime: Int,
+    viewTimeOut: Int,
+    logPath: String,
+    debugLevel: Int,
+    pipeLineLength: Int
+) {
 
   // todo this version does not implement pipelining yet!
 
-
-  implicit val ec: ExecutionContext = ExecutionContext.global // global thread pool because this code uses multiple threads
+  implicit val ec: ExecutionContext =
+    ExecutionContext.global // global thread pool because this code uses multiple threads
 
   var numReplicas: Int = config.peers.length // parameter n in paxos
 
-  var clientWriters: mutable.Map[Int, PrintWriter] = mutable.Map.empty // outgoing connection writers for clients
+  var clientWriters: mutable.Map[Int, PrintWriter] =
+    mutable.Map.empty // outgoing connection writers for clients
 
-  var replicaWriters: mutable.Map[Int, PrintWriter] = mutable.Map.empty //outgoing connection writers for replicas
+  var replicaWriters: mutable.Map[Int, PrintWriter] =
+    mutable.Map.empty // outgoing connection writers for replicas
 
-  var inputChannel = new SynchronousQueue[String]() // central buffer holding all the incoming messages
+  var inputChannel =
+    new SynchronousQueue[
+      String
+    ]() // central buffer holding all the incoming messages
 
-  var incomingClientBatches = ListBuffer.empty[ClientBatch] // client batches to be proposed later
-
+  var incomingClientBatches =
+    ListBuffer.empty[ClientBatch] // client batches to be proposed later
 
   // initServer is the main execution point of Paxos server.
 
@@ -48,7 +67,8 @@ class Server(port: Int,
 
       println(s"initializing server ${name}")
 
-      val replicaServer = new ServerSocket(port, 150, InetAddress.getByName("0.0.0.0"))
+      val replicaServer =
+        new ServerSocket(port, 150, InetAddress.getByName("0.0.0.0"))
 
       println(s"Server started listening on port 0.0.0.0:$port")
 
@@ -73,7 +93,8 @@ class Server(port: Int,
     Future {
       println("initializing the proxy")
 
-      val proxyServer = new ServerSocket(port + 1000, 150, InetAddress.getByName("0.0.0.0"))
+      val proxyServer =
+        new ServerSocket(port + 1000, 150, InetAddress.getByName("0.0.0.0"))
 
       println(s"Proxy started listening on port 0.0.0.0:${port + 1}")
 
@@ -106,8 +127,8 @@ class Server(port: Int,
       val msg = HeartBeat(name)
       val json = write[Message](msg)
 
-      this.config.peers.foreach {
-        peer => {
+      this.config.peers.foreach { peer =>
+        {
           this.replicaWriters(peer.name).println(json)
         }
       }
@@ -118,8 +139,8 @@ class Server(port: Int,
   // connect to all the replicas inSync
 
   private def connectToReplicas(): Unit = {
-    this.config.peers.foreach {
-      peer => {
+    this.config.peers.foreach { peer =>
+      {
         var connected = false
 
         while (!connected) {
@@ -151,7 +172,8 @@ class Server(port: Int,
     val msg = read[Message](line)
     msg match {
       case m: Id =>
-        this.clientWriters(m.senderId) = new PrintWriter(socket.getOutputStream, true)
+        this.clientWriters(m.senderId) =
+          new PrintWriter(socket.getOutputStream, true)
       case other =>
         throw new RuntimeException("Client should first send me the Id")
     }
