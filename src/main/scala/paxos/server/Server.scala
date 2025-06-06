@@ -24,15 +24,15 @@ import paxos.shared.{
 }
 
 class Server(
-    port: Int,
-    name: Int,
-    config: NetworkConfig,
-    replicaBathSize: Int,
-    replicaBatchTime: Int,
-    viewTimeOut: Int,
-    logPath: String,
-    debugLevel: Int,
-    pipeLineLength: Int
+    val port: Int,
+    val name: Int,
+    val config: NetworkConfig,
+    val replicaBathSize: Int,
+    val replicaBatchTime: Int,
+    val viewTimeOut: Int,
+    val logPath: String,
+    val debugLevel: Int,
+    val pipeLineLength: Int
 ) {
 
   // TODO this version does not implement pipelining yet!
@@ -157,7 +157,6 @@ class Server(
     }
   }
 
-
   // handle the new server connection -- put all incoming messages to buffer
 
   def handle_server_socket(socket: Socket): Unit = {
@@ -241,7 +240,6 @@ class Server(
     }
   }
 
-
   // print heart beat details
 
   private def handleHeartBeat(m: HeartBeat): Unit = {
@@ -254,6 +252,20 @@ class Server(
     println(s"client batch from ${m.senderId}")
     this.incomingClientBatches += m
     // todo if self is not the paxos leader then forward the client batch to leader
+  }
+
+  private def sendToReplica(
+      msg: Message,
+      replicaId: Int
+  ): Unit = {
+    if (this.replicaWriters.contains(replicaId)) {
+      val json = write[Message](msg)
+      this.replicaWriters(replicaId).println(json)
+    } else {
+      throw new RuntimeException(
+        s"Replica $replicaId is not connected, cannot send message"
+      )
+    }
   }
 
   // paxos specific handlers
