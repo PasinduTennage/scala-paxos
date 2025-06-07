@@ -9,7 +9,7 @@ case class HeartBeat(senderId: Int) extends Message
 
 case class Id(senderId: Int) extends Message
 
-case class ClientBatch(senderId: Int, commands: List[String]) extends Message
+case class ClientBatch(id :String, senderId: Int, commands: List[String]) extends Message
 
 case class ReplicaBatch(Id: String, commands: List[ClientBatch]) extends Message
 
