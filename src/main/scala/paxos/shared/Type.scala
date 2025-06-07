@@ -17,7 +17,6 @@ case class Prepare(senderId: Int, instance: Int, prepareBallot: Int)
     extends Message
 
 case class Promise(
-    senderId: Int,
     instance: Int,
     promiseBallot: Int,
     lastAcceptedBallot: Int,
