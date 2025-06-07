@@ -25,6 +25,7 @@ case class Promise(
 ) extends Message
 
 case class Propose(
+    senderId: Int,
     instance: Int,
     proposeBallot: Int,
     proposeValue: ReplicaBatch
@@ -34,11 +35,11 @@ case class Accept(instance: Int, acceptBallot: Int) extends Message
 
 case class Decide(instance: Int, Id: String) extends Message
 
-case class FetchRequest(instance: Int) extends Message
+case class FetchRequest(sender: Int, instance: Int) extends Message
 
 case class FetchResponse(
     instance: Int,
-    decidedValue: ReplicaBatch,
+    decidedValue: ReplicaBatch
 ) extends Message
 
 object Message {

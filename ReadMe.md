@@ -1,4 +1,4 @@
-# Multi Paxos implementation in Scala
+# Paxos implementation in Scala
 
 `mvn clean package`
 

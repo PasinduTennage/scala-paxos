@@ -22,13 +22,13 @@ import paxos.shared.{
   Propose,
   Id
 }
+import java.time.{Duration, LocalDateTime}
 
 class Server(
     val port: Int,
     val name: Int,
     val config: NetworkConfig,
     val replicaBathSize: Int,
-    val replicaBatchTime: Int,
     val viewTimeOut: Int,
     val logPath: String,
     val debugLevel: Int,
@@ -53,8 +53,10 @@ class Server(
       String
     ]() // central buffer holding all the incoming messages
 
-  var incomingClientBatches =
-    ListBuffer.empty[ClientBatch] // client batches to be proposed later
+  var paxos_instance = new Paxos(
+    numReplicas,
+    this
+  ) // paxos instance that will handle the protocol
 
   // initServer is the main execution point of Paxos server.
 
@@ -250,27 +252,22 @@ class Server(
 
   private def handleClientBatch(m: ClientBatch): Unit = {
     println(s"client batch from ${m.senderId}")
-    this.incomingClientBatches += m
-    // todo if self is not the paxos leader then forward the client batch to leader
-  }
-
-  private def sendToReplica(
-      msg: Message,
-      replicaId: Int
-  ): Unit = {
-    if (this.replicaWriters.contains(replicaId)) {
-      val json = write[Message](msg)
-      this.replicaWriters(replicaId).println(json)
-    } else {
-      throw new RuntimeException(
-        s"Replica $replicaId is not connected, cannot send message"
-      )
+    this.paxos_instance.incomingClientBatches += m
+    if (
+      paxos_instance.is_proposing && Duration
+        .between(this.paxos_instance.last_proposed_time, LocalDateTime.now())
+        .toMillis < this.viewTimeOut
+    ) {} else {
+      this.paxos_instance.is_proposing = false
+      this.paxos_instance.send_prepare()
     }
   }
 
   // paxos specific handlers
 
-  private def handlePrepare(m: Prepare): Unit = {}
+  private def handlePrepare(m: Prepare): Unit = {
+    this.paxos_instance.handle_prepare(m)
+  }
 
   private def handlePromise(m: Promise): Unit = {}
 

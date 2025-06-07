@@ -68,7 +68,6 @@ object Main {
           cmdArgs.name,
           config,
           cmdArgs.replicaBathSize,
-          cmdArgs.replicaBatchTime,
           cmdArgs.viewTimeOut,
           cmdArgs.logPath,
           cmdArgs.debugLevel,
