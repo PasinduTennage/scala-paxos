@@ -1,13 +1,12 @@
 package paxos.server
 
-import paxos.config.{JsonLoader, Peer}
+import paxos.config._
 import scopt.OParser
 
 case class CmdArgs(
     name: Int = 1,
     configPath: String = "config/config.json",
     replicaBathSize: Int = 100,
-    replicaBatchTime: Int = 100, // ms
     viewTimeOut: Int = 10000, // ms
     logPath: String = "logs/",
     debugLevel: Int = 0,
@@ -33,9 +32,6 @@ object Main {
         opt[Int]("replicaBathSize")
           .action((x, c) => c.copy(replicaBathSize = x))
           .text("replicaBathSize as integer"),
-        opt[Int]("replicaBatchTime")
-          .action((x, c) => c.copy(replicaBatchTime = x))
-          .text("replicaBatchTime as integer"),
         opt[Int]("viewTimeOut")
           .action((x, c) => c.copy(viewTimeOut = x))
           .text("viewTimeOut as integer"),
@@ -73,6 +69,7 @@ object Main {
           cmdArgs.debugLevel,
           cmdArgs.pipeLineLength
         )
+        
         s.initServer()
 
       case None =>
