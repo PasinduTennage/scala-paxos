@@ -8,20 +8,8 @@ import java.util.concurrent.SynchronousQueue
 import scala.collection.mutable
 import scala.collection.mutable.ListBuffer
 
-import paxos.config.NetworkConfig
-import paxos.shared.{
-  Accept,
-  ClientBatch,
-  Decide,
-  FetchRequest,
-  FetchResponse,
-  HeartBeat,
-  Message,
-  Prepare,
-  Promise,
-  Propose,
-  Id
-}
+import paxos.config._
+import paxos.shared._
 import java.time.{Duration, LocalDateTime}
 
 class Server(
@@ -30,12 +18,10 @@ class Server(
     val config: NetworkConfig,
     val replicaBathSize: Int,
     val viewTimeOut: Int,
-    val logPath: String,
-    val debugLevel: Int,
-    val pipeLineLength: Int
+    val logPath: String, //todo implement logging
+    val debugLevel: Int, // todo implement debugging
+    val pipeLineLength: Int // todo implement pipelining
 ) {
-
-  // TODO this version does not implement pipelining yet!
 
   implicit val ec: ExecutionContext =
     ExecutionContext.global // global thread pool because this code uses multiple threads
@@ -58,6 +44,8 @@ class Server(
     this
   ) // paxos instance that will handle the protocol
 
+  
+  
   // initServer is the main execution point of Paxos server.
 
   def initServer(): Unit = {
@@ -98,6 +86,7 @@ class Server(
         new ServerSocket(port + 1000, 150, InetAddress.getByName("0.0.0.0"))
 
       println(s"Proxy started listening on port 0.0.0.0:${port + 1000}")
+
       println("Proxy started accepting new client requests")
 
       while (true) {
@@ -133,7 +122,7 @@ class Server(
             connected = true
           } catch {
             case e: Exception =>
-              Thread.sleep(100)
+              Thread.sleep(1000)
           }
         }
       }
@@ -154,6 +143,7 @@ class Server(
           this.replicaWriters(peer.name).println(json)
         }
       }
+      println(s"Sent heart beat to all replicas from ${name}")
 
       Thread.sleep(5000)
     }
@@ -251,15 +241,24 @@ class Server(
   // handler for new client batches
 
   private def handleClientBatch(m: ClientBatch): Unit = {
+
     println(s"client batch from ${m.senderId}")
+
     this.paxos_instance.incomingClientBatches += m
+
     if (
       paxos_instance.is_proposing && Duration
-        .between(this.paxos_instance.last_proposed_time, LocalDateTime.now())
+        .between(LocalDateTime.now(), this.paxos_instance.last_proposed_time)
         .toMillis < this.viewTimeOut
-    ) {} else {
+    ) {
+      // nothing
+    } else {
       this.paxos_instance.is_proposing = false
       this.paxos_instance.send_prepare()
+
+      println(
+        s"Started a new prepare from ${this.name} at time ${LocalDateTime.now()}"
+      )
     }
   }
 
