@@ -440,11 +440,32 @@ class Paxos(val n: Int, val server: Server) {
         return
       } else {
         this.last_decided_index = i
+        this.sendClientResponse(this.slots(i).decided_id)
         i+=1
       }
 
     }
 
+  }
+
+  def sendClientResponse(decided_id: String) : Unit = {
+    val batch = this.id_replicaBatch_map
+      .getOrElse(decided_id, null)
+
+    batch.commands.foreach { b =>
+          {
+            val response: ClientBatch = ClientBatch(
+              id = b.id,
+              senderId = this.server.name,
+              commands = null
+            )
+            val json = write[Message](response)
+            this.server.clientWriters(b.senderId).println(json)
+            println(
+              s"Replica ${this.server.name} sent response for client batch ${b.id} to client ${b.senderId}"
+            )
+          }
+        }  
   }
 
 }
