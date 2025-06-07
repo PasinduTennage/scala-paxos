@@ -155,7 +155,7 @@ class Server(
         }
       }
 
-      Thread.sleep(1000)
+      Thread.sleep(5000)
     }
   }
 
@@ -269,16 +269,28 @@ class Server(
     this.paxos_instance.handle_prepare(m)
   }
 
-  private def handlePromise(m: Promise): Unit = {}
+  private def handlePromise(m: Promise): Unit = {
+    this.paxos_instance.handle_promise(m)
+  }
 
-  private def handlePropose(m: Propose): Unit = {}
+  private def handlePropose(m: Propose): Unit = {
+    this.paxos_instance.handle_propose(m)
+  }
 
-  private def handleAccept(m: Accept): Unit = {}
+  private def handleAccept(m: Accept): Unit = {
+    this.paxos_instance.handle_accept(m)
+  }
 
-  private def handleDecide(m: Decide): Unit = {}
+  private def handleDecide(m: Decide): Unit = {
+    this.paxos_instance.handle_decide(m)
+  }
 
-  private def handleFetchRequest(m: FetchRequest): Unit = {}
+  private def handleFetchRequest(m: FetchRequest): Unit = {
+    this.paxos_instance.handle_fetch_request(m)
+  }
 
-  private def handleFetchResponse(m: FetchResponse): Unit = {}
+  private def handleFetchResponse(m: FetchResponse): Unit = {
+    this.paxos_instance.handle_fetch_response(m)
+  }
 
 }

@@ -12,8 +12,6 @@ nohup ./target/server --name 5 --configPath config/config.json > logs/replica_5.
 
 sleep 20
 
-for i in $(seq 1 $NUM_REPLICAS); do
-    pkill server
-done
+pkill server; pkill server; pkill server; pkill server; pkill server
 
 echo "All $NUM_REPLICAS replicas started."

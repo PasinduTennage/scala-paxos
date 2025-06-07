@@ -66,6 +66,7 @@ class Paxos(val n: Int, val server: Server) {
   def send_prepare(): Unit = {
 
     this.last_proposed_time = LocalDateTime.now()
+    this.is_proposing = true
     val prepare_instance = this.last_decided_index + 1
 
     this.create_instance_if_not_exists(prepare_instance)
