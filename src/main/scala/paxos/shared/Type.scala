@@ -30,15 +30,14 @@ case class Propose(
     proposeValue: ReplicaBatch
 ) extends Message
 
-case class Accept(instance: Int, acceptBallot: Int) extends Message
+case class Accept(instance: Int, acceptBallot: Int, acceptId: String) extends Message
 
 case class Decide(instance: Int, Id: String) extends Message
 
-case class FetchRequest(sender: Int, instance: Int) extends Message
+case class FetchRequest(sender: Int, Id: String) extends Message
 
 case class FetchResponse(
-    instance: Int,
-    decidedValue: ReplicaBatch
+    value: ReplicaBatch
 ) extends Message
 
 object Message {
