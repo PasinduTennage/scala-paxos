@@ -10,7 +10,7 @@ import paxos.config.JsonLoader
 case class ClientCmdArgs(
     name: Int = 1,
     configPath: String = "config/config.json",
-    duration: Int = 60 // duration in seconds for which the client will run
+    duration: Int = 60 // duration in seconds
 )
 
 object Main {
@@ -44,6 +44,7 @@ object Main {
 
       case None =>
         println("failed passing args")
+        
         System.exit(1)
     }
   }  
