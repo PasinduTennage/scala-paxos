@@ -77,7 +77,7 @@ class Client(name: Int, config: NetworkConfig, duration: Int){
 
           while (!connected) {
             try {
-              val socket = new Socket(peer.ip, peer.port)
+              val socket = new Socket(peer.ip, peer.port+1000)
               val out = new PrintWriter(socket.getOutputStream, true)
               println(s"Connected to replica ${peer.name} at ${peer.ip}:${peer.port}")
               // send id
@@ -176,6 +176,8 @@ class Client(name: Int, config: NetworkConfig, duration: Int){
           val latency = java.time.Duration.between(sentTime, receivedTime).toMillis
           totalReqests += 50 // fixed number of commands per batch
           totalLatency += latency
+        }else{
+          println(s"Batch $id was sent but not received")
         }
       }
 

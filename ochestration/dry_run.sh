@@ -1,5 +1,12 @@
 #!/bin/bash
 
+
+
+rm -r logs
+mkdir logs
+
+echo "deleted and created logs/..."
+
 mvn clean package
 
 nohup ./target/server --name 1 --configPath config/config.json > logs/replica_1.log &
@@ -12,7 +19,7 @@ echo "All 5 replicas started."
 
 sleep 10
 
-./target/client --name 10 --configPath config/config.json --duration 60 > logs/client_10.log &
+./target/client --name 10 --configPath config/config.json --duration 60 > logs/client_10.log
 
 echo "Client started."
 
