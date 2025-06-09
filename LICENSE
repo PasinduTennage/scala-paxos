@@ -24,7 +24,7 @@ The contributors do **NOT take any responsibility** for any kind of consequences
 **You must NOT use this code** in environments or applications where failure can result in:
 
 - Data corruption
-- Loss of funds or assets
+- Loss of funds or assets.
 - Infrastructure compromise.
 - Distributed system failure
 - Life-threatening situations
