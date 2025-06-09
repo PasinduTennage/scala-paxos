@@ -1,0 +1,38 @@
+BSD 3-Clause License
+
+Copyright (c) 2025
+All rights reserved.
+
+Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
+
+1. Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.
+2. Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer in the documentation and/or other materials provided with the distribution.
+3. Neither the name of the copyright holder nor the names of its contributors may be used to endorse or promote products derived from this software without specific prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND **ANY EXPRESS OR IMPLIED WARRANTIES ARE DISCLAIMED**, INCLUDING BUT NOT LIMITED TO THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE. IN **NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE** FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES.
+
+**IMPORTANT NOTICE:**
+
+This codebase is an academic implementation of the 2-phase Paxos consensus protocol. It is **NOT PRODUCTION READY**.
+
+You are free to use, copy, and modify this software under the conditions of this license. **However, the license agreement must always be included with any distribution or reuse**.
+
+**THIS SOFTWARE MUST NOT BE USED IN ANY PRODUCTION ENVIRONMENT.**
+
+The contributors do **NOT take any responsibility** for any kind of consequences that result from using this code.
+
+**You must NOT use this code** in environments or applications where failure can result in:
+
+- Data corruption
+- Loss of funds or assets
+- Infrastructure compromise
+- Distributed system failure
+- Life-threatening situations
+- Healthcare, emergency, or mission-critical systems
+- Autonomous systems or vehicles
+- Any system requiring fault tolerance or consistency guarantees
+- Any commercial or governmental application without thorough formal verification and audits
+
+**By using this software, you accept that all risk is entirely yours, and you waive all rights to hold the authors or contributors liable.**
+
+**DO NOT USE THIS CODE IF YOU DO NOT AGREE TO THESE TERMS.**
