@@ -122,6 +122,7 @@ class Server(
             connected = true
           } catch {
             case e: Exception =>
+              println(s"Failed to connect to $peer, retrying..."+ e.getMessage)
               Thread.sleep(1000)
           }
         }
